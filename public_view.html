@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Transparency - Public View</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #e6f7ff 0%, #ffffff 100%);
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            color: #0277bd;
+            margin-bottom: 10px;
+        }
+
+        p.subtitle {
+            font-size: 1.1rem;
+            color: #546e7a;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e1f5fe;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            color: #78909c;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            background: #fafafa;
+            padding: 15px;
+            border-top: 1px solid #eceff1;
+            border-bottom: 1px solid #eceff1;
+        }
+
+        td:first-child {
+            border-left: 1px solid #eceff1;
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+
+        td:last-child {
+            border-right: 1px solid #eceff1;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .cat-fire {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .cat-health {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .cat-electricity {
+            background: #fff8e1;
+            color: #f9a825;
+        }
+
+        .cat-road {
+            background: #eceff1;
+            color: #455a64;
+        }
+
+        .urgency-critical {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .urgency-high {
+            color: #f57c00;
+            font-weight: bold;
+        }
+
+        .urgency-medium {
+            color: #fbc02d;
+        }
+
+        .urgency-low {
+            color: #388e3c;
+        }
+
+        .status-resolved {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #78909c;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #0277bd;
+            font-weight: bold;
+            border: 2px solid #0277bd;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #0277bd;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container animate__animated animate__fadeIn">
+        <header style="text-align: center; margin-bottom: 50px;">
+            <h1>Open Transparency Data</h1>
+            <p class="subtitle">Live accountability for all citizen service requests.</p>
+        </header>
+
+        <section class="card">
+            {% if requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Category</th>
+                        <th>Neighborhood</th>
+                        <th>Status</th>
+                        <th>AI Risk Level</th>
+                        <th>Processing Logic</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td style="font-weight: bold; color: #37474f;">#{{ req.id }}</td>
+                        <td><span class="badge cat-{{ req.category|lower }}">{{ req.category }}</span></td>
+                        <td>{{ req.location }}</td>
+                        <td>
+                            {% if req.status == 'Resolved' %}
+                            <span class="status-resolved">✔ Resolved</span>
+                            {% else %}
+                            <span class="status-pending">⏳ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="urgency-{{ req.urgency|lower }}">{{ req.urgency }}</td>
+                        <td style="font-size: 0.9rem; color: #607d8b;">{{ req.ai_explanation }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p style="text-align: center; color: #b0bec5;">No active public data available.</p>
+            {% endif %}
+        </section>
+
+        <div style="text-align: center;">
+            <a href="{{ url_for('index') }}" class="back-btn">← Return to Dashboard</a>
+        </div>
+    </div>
+</body>
+
+</html>

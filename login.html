@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Operations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #1976D2;
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 15px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .flash {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Logo in top-left corner -->
+    <img src="{{ url_for('static', filename='civic-logo.svg') }}" alt="Civic Connect Logo" style="position: fixed; top: 20px; left: 20px; width: 150px; height: auto; z-index: 100; animation: pulse 2s infinite;">
+    
+    <!-- Intro Animation using Animate.css -->
+    <div id="intro-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d1b2a; display: flex; justify-content: center; align-items: center; z-index: 9999; animation: fadeOut 1s ease-in-out 3s forwards;">
+        <div style="text-align: center;">
+            <h1 style="color: #1976D2; font-size: 3rem; margin: 0; font-weight: 900; font-family: 'Montserrat', sans-serif;"
+                class="animate__animated animate__fadeInUp animate__delay-1s">CIVIC CONNECT</h1>
+            <p style="color: #FF9800; font-size: 1.2rem; margin: 20px 0 0 0; font-weight: 600; font-style: italic; font-family: 'Inter', sans-serif; letter-spacing: 0.5px;"
+                class="animate__animated animate__fadeInUp animate__delay-2s">"When data becomes intelligence, governance becomes proactive"</p>
+        </div>
+    </div>
+    <style>
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+    </style>
+
+    <div class="login-card animate__animated animate__fadeInDown animate__delay-3s">
+        <h2 id="form-title">Secure Login</h2>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- Login Form -->
+        <form id="login-form" method="POST" action="{{ url_for('login') }}">
+            <div style="position: relative;">
+                <input type="text" name="username" placeholder="Username" required style="padding-left: 35px;">
+                <span style="position: absolute; left: 10px; top: 22px; color: #888;">👤</span>
+            </div>
+            <div style="position: relative;">
+                <input type="password" name="password" placeholder="Password" required style="padding-left: 35px;">
+                <span style="position: absolute; left: 10px; top: 22px; color: #888;">🔒</span>
+            </div>
+            <button type="submit">Login</button>
+            <p style="margin-top: 15px; font-size: 0.9rem;">
+                New User? <a href="#" onclick="toggleForm()" style="color: #2196F3; font-weight: bold;">Register
+                    Here</a>
+            </p>
+        </form>
+
+        <!-- Register Form (Hidden by Default) -->
+        <form id="register-form" method="POST" action="{{ url_for('register') }}" style="display: none;">
+            <div style="position: relative;">
+                <input type="text" name="reg_username" placeholder="New Username" required style="padding-left: 35px;">
+                <span style="position: absolute; left: 10px; top: 22px; color: #888;">👤</span>
+            </div>
+            <div style="position: relative;">
+                <input type="password" name="reg_password" placeholder="New Password" required
+                    style="padding-left: 35px;">
+                <span style="position: absolute; left: 10px; top: 22px; color: #888;">🔒</span>
+            </div>
+            <button type="submit" style="background: #4CAF50;">Create Account</button>
+            <p style="margin-top: 15px; font-size: 0.9rem;">
+                Already have an account? <a href="#" onclick="toggleForm()"
+                    style="color: #2196F3; font-weight: bold;">Login Here</a>
+            </p>
+        </form>
+
+        <p style="margin-top: 20px; font-size: 0.85rem; color: #888;">
+            Make sure to use authorized credentials.<br>
+            (Demo: admin/admin123 or user/user123)
+        </p>
+
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Portal</a>
+    </div>
+
+    <script>
+        function toggleForm() {
+            var loginForm = document.getElementById('login-form');
+            var regForm = document.getElementById('register-form');
+            var title = document.getElementById('form-title');
+
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+                title.innerText = 'Secure Login';
+                title.classList.add('animate__animated', 'animate__fadeIn');
+            } else {
+                loginForm.style.display = 'none';
+                regForm.style.display = 'block';
+                title.innerText = 'Create Account';
+                title.classList.add('animate__animated', 'animate__fadeIn');
+            }
+
+            setTimeout(() => {
+                title.classList.remove('animate__animated', 'animate__fadeIn');
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>

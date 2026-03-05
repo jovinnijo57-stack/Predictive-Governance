@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Governance Dashboard</title>
+    <!-- Auto-refresh every 30 seconds for Real-Time monitoring -->
+    <meta http-equiv="refresh" content="30">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* OVERRIDE THEME TO MATCH ADMIN LOGIN */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #2c3e50 0%, #000000 100%);
+            --card-bg: rgba(30, 30, 30, 0.85);
+            /* Darker semi-transparent */
+            --text-color: #ecf0f1;
+            --gold-accent: #d4af37;
+            --border-color: #455a64;
+        }
+
+        body {
+            background: var(--bg-gradient) !important;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            font-weight: 900;
+        }
+
+        /* Card Styling Update */
+        .card {
+            background: var(--card-bg) !important;
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--gold-accent) !important;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Stat Numbers */
+        .stat-number {
+            color: var(--gold-accent) !important;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Table Overrides */
+        table {
+            background: transparent !important;
+        }
+
+        th {
+            background-color: #263238 !important;
+            color: var(--gold-accent);
+            border-bottom: 2px solid var(--gold-accent) !important;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        td {
+            border-bottom: 1px solid #37474f !important;
+            color: #cfd8dc;
+        }
+
+        /* Button Overrides */
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--gold-accent);
+            color: var(--gold-accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gold-accent);
+            color: #000;
+        }
+
+        /* Department Table Specifics */
+        .dept-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #455a64;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gold-accent);
+        }
+
+        /* Radar Animation */
+        .radar-scanner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #37474f;
+            position: absolute;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .radar-scanner::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 50%;
+            background: linear-gradient(45deg, transparent 50%, rgba(105, 240, 174, 0.5) 100%);
+            transform-origin: 0 0;
+            animation: radar-spin 2s linear infinite;
+        }
+
+        .radar-critical::after {
+            background: linear-gradient(45deg, transparent 50%, rgba(255, 82, 82, 0.8) 100%);
+            animation: radar-spin 0.5s linear infinite;
+            /* Faster spin */
+        }
+
+        @keyframes radar-spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Terminal Text */
+        .log-entry {
+            font-size: 0.85rem;
+            animation: fadeIn 0.3s;
+        }
+
+        .log-time {
+            color: #546e7a;
+            margin-right: 5px;
+        }
+
+        .log-req {
+            color: #d4af37;
+        }
+
+        .log-arrow {
+            color: #546e7a;
+            margin: 0 5px;
+        }
+
+        .log-dept {
+            color: #64b5f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="{{ url_for('static', filename='civic-logo.svg') }}" alt="Civic Connect Logo"
+        style="position: fixed; top: 20px; left: 20px; width: 150px; height: auto; z-index: 100; animation: pulse 2s infinite;">
+
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div>
+                    <h1>City Operations Dashboard</h1>
+                    <p>Real-time overview of citizen reports. <span style="font-size: 0.9rem; color: #b0bec5;">Live Feed
+                            •
+                            Updated: <span id="clock"></span></span></p>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}"
+                style="background: #ef5350; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9rem;">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </header>
+
+        {% if alert %}
+        <div class="alert-box {% if alert.level == 'CRITICAL' %}alert-critical{% else %}alert-warning{% endif %}">
+            <span style="font-size: 1.5rem; margin-right: 10px;">
+                {% if alert.level == 'CRITICAL' %}🚨{% else %}⚠️{% endif %}
+            </span>
+            {{ alert.message }}
+        </div>
+
+        {% endif %}
+
+        <section class="stats animate__animated animate__fadeInUp">
+            <div class="card">
+                <h3><i class="fa-solid fa-list-check" style="color: #d4af37;"></i> Total</h3>
+                <p class="stat-number">{{ stats.total }}</p>
+            </div>
+
+            <div class="card critical">
+                <h3><i class="fa-solid fa-triangle-exclamation"></i> Critical</h3>
+                <p class="stat-number">{{ stats.critical }}</p>
+            </div>
+            <div class="card high">
+                <h3><i class="fa-solid fa-circle-exclamation"></i> High</h3>
+                <p class="stat-number">{{ stats.high }}</p>
+            </div>
+            <div class="card medium">
+                <h3><i class="fa-solid fa-bell"></i> Medium</h3>
+                <p class="stat-number">{{ stats.medium }}</p>
+            </div>
+            <div class="card low">
+                <h3><i class="fa-solid fa-clock"></i> Low</h3>
+                <p class="stat-number">{{ stats.low }}</p>
+            </div>
+
+        </section>
+
+        <!-- AI & INTELLIGENCE HUD -->
+        <section class="dashboard-section animate__animated animate__fadeInUp animate__delay-1s"
+            style="margin-top: 30px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+
+                <!-- LEFT: EARLY WARNING RADAR -->
+                <div class="card"
+                    style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: center;">
+                    <h3><i class="fa-solid fa-satellite-dish" style="color: var(--gold-accent);"></i> Early Warning
+                        System</h3>
+                    <div class="radar-container"
+                        style="position: relative; width: 150px; height: 150px; margin: 20px 0;">
+                        <div
+                            class="radar-scanner {% if stats.critical > 0 %}radar-critical{% else %}radar-normal{% endif %}">
+                        </div>
+                        <div class="radar-bg"></div>
+                        <i class="fa-solid fa-city"
+                            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #455a64; font-size: 2rem;"></i>
+                    </div>
+                    <div style="text-align: center;">
+                        <p style="font-size: 0.9rem; color: #b0bec5;">Current Threat Level</p>
+                        {% if stats.critical > 0 %}
+                        <strong
+                            style="font-size: 1.5rem; color: #ff5252; text-shadow: 0 0 10px #ff5252;">CRITICAL</strong>
+                        <p style="color: #ff5252; font-size: 0.8rem;">Active Hazards Detected</p>
+                        {% elif stats.high > 5 %}
+                        <strong style="font-size: 1.5rem; color: #ff9800;">ELEVATED</strong>
+                        {% else %}
+                        <strong style="font-size: 1.5rem; color: #69f0ae;">STABLE</strong>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- RIGHT: LIVE AI CLASSIFICATION NODE -->
+                <div class="card" style="flex: 2; min-width: 400px;">
+                    <h3><i class="fa-solid fa-network-wired" style="color: var(--gold-accent);"></i> Central AI Nexus
+                    </h3>
+                    <p style="font-size: 0.9rem; color: #b0bec5; margin-bottom: 10px;">Real-time classification and
+                        department routing.</p>
+
+                    <div class="terminal-window"
+                        style="background: #000; padding: 15px; border-radius: 5px; height: 200px; overflow-y: hidden; font-family: 'Courier New', monospace; border: 1px solid #333;">
+                        <div id="ai-log" style="display: flex; flex-direction: column; gap: 5px;">
+                            <!-- JS will populate this -->
+                            <span style="color: #69f0ae;">> SYSTEM ONLINE. CONNECTED TO ALL DEPARTMENTS.</span>
+                            <span style="color: #69f0ae;">> MONITORING CITY FEEDS...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CROSS-DEPARTMENT LINKS (If Active) -->
+            {% if correlations %}
+            <div class="card"
+                style="width: 100%; margin-top: 20px; border-left: 5px solid #e040fb; background: linear-gradient(90deg, rgba(224, 64, 251, 0.1) 0%, transparent 100%);">
+                <h3><i class="fa-solid fa-link"></i> Linked Department Alert</h3>
+                <p style="font-size: 0.9rem; color: #b0bec5;">Pattern Recognition has assessed multiple departments are
+                    needed at these locations:</p>
+
+                <div style="display: flex; gap: 15px; margin-top: 15px;">
+                    {% for corr in correlations %}
+                    <div class="corr-badge"
+                        style="border: 1px solid #e040fb; padding: 10px; border-radius: 5px; flex: 1;">
+                        <strong style="color: #e040fb;">{{ corr.location }}</strong>
+                        <div style="display: flex; gap: 10px; margin-top: 5px;">
+                            <span style="font-size: 1.5rem;">🔗</span>
+                            <div>
+                                <div style="font-size: 0.8rem; color: #b0bec5;">Connecting:</div>
+                                <div style="font-weight: bold; color:white;">{{ corr.departments|join(' + ') }}</div>
+                            </div>
+                        </div>
+                        <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: #ddd;">{{ corr.message }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- DEPARTMENT METRICS -->
+        <section class="dashboard-section animate__animated animate__fadeInUp animate__delay-2s"
+            style="margin-top: 30px;">
+            <div class="card" style="width: 100%;">
+                <h3>📊 Department Performance Metrics</h3>
+                <p style="font-size: 0.9rem; color: #b0bec5; margin-bottom: 15px;">Real-time analysis of department
+                    efficiency and bottlenecks.</p>
+
+                <table class="dept-table">
+                    <thead>
+                        <tr style="text-align: left;">
+                            <th>Department</th>
+                            <th>Total Requests</th>
+                            <th>Resolved</th>
+                            <th>Bottlenecks (High Urgency)</th>
+                            <th>Efficiency Score</th>
+                            <th>AI Resource Plan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dept, data in dept_stats.items() %}
+                        <tr>
+                            <td class="dept-name">{{ dept }}</td>
+                            <td>{{ data.total }}</td>
+                            <td class="val-resolved">{{ data.resolved }}</td>
+                            <td
+                                class="val-pending {% if data.pending_critical > 0 %}text-red{% else %}text-gray{% endif %}">
+                                {{ data.pending_critical }}
+                            </td>
+                            <td>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill {% if data.efficiency > 80 %}bg-green{% elif data.efficiency > 50 %}bg-yellow{% else %}bg-red{% endif %}"
+                                        style="width: {{ data.efficiency }}%;"></div>
+                                </div>
+                                <span style="font-size: 0.8rem;">{{ data.efficiency }}%</span>
+                            </td>
+                            <td class="ai-rec text-{{ data.rec_color }}">{{ data.recommendation }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+        <!-- DEPARTMENT CHARTS -->
+        <section class="dashboard-section animate__animated animate__fadeInUp animate__delay-2s"
+            style="margin-top: 30px;">
+            <div class="card" style="width: 100%;">
+                <h3>📉 Department Workload Analysis</h3>
+                <p style="font-size: 0.9rem; color: #b0bec5; margin-bottom: 15px;">Visual breakdown of requests received
+                    per department.</p>
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="deptChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- HEATMAP VISUALIZATION -->
+        <section class="dashboard-section animate__animated animate__fadeInUp animate__delay-2s"
+            style="margin-top: 30px;">
+            <!-- HeatMap Visualization -->
+            <div class="card" style="width: 100%;">
+                <h3>🔥 Predictive Service Demand Heatmap</h3>
+                <p style="font-size: 0.9rem; color: #b0bec5; margin-bottom: 15px;">Visualizing future problem areas
+                    based
+                    on current reporting density.</p>
+
+                {% if heatmap_data %}
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                    {% for spot in heatmap_data %}
+                    <div class="heatmap-spot intensity-{{ spot.intensity|lower }}">
+                        <h4 class="spot-title">{{ spot.location }}</h4>
+                        <div class="spot-details">
+                            <span class="spot-density">Density: {{ spot.count }}</span>
+                            <span class="spot-intensity">{{ spot.intensity }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <p>No location data available yet to generate heatmap.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- AI PREDICTIVE MAINTENANCE FORECAST -->
+        <section class="dashboard-section animate__animated animate__fadeInUp animate__delay-3s"
+            style="margin-top: 30px;">
+            <div class="card" style="width: 100%;">
+                <h3>🔮 AI-Driven Predictive Maintenance</h3>
+                <p style="font-size: 0.9rem; color: #b0bec5; margin-bottom: 20px;">
+                    Proactive interventions generated by analysis of sensor data and citizen reports.
+                    <span style="color: #69f0ae;">Actions taken independently by AI to prevent service failure.</span>
+                </p>
+
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    {% for forecast in forecasts %}
+                    <div class="forecast-card"
+                        style="flex: 1; min-width: 300px; background: rgba(255, 255, 255, 0.05); border: 1px solid #546e7a; border-radius: 8px; padding: 20px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: #fff;">{{ forecast.sector }}</h4>
+                            <span
+                                style="font-size: 0.8rem; background: #37474f; padding: 4px 8px; border-radius: 4px; color: #cfd8dc;">
+                                Risk: {{ forecast.risk_level }}
+                            </span>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <small style="color: #b0bec5; display: block; margin-bottom: 5px;">Predicted Failure
+                                Scenario:</small>
+                            <div style="color: #ffcc80; font-weight: bold;">
+                                <i class="fa-solid fa-bolt-lightning"></i> {{ forecast.predicted_event }}
+                            </div>
+                            <div style="font-size: 0.85rem; color: #ef9a9a; margin-top: 2px;">
+                                Impact: {{ forecast.impact }}
+                            </div>
+                        </div>
+
+                        <div
+                            style="border-top: 1px solid #455a64; padding-top: 10px; margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                            <div
+                                style="width: 30px; height: 30px; border-radius: 50%; background: #69f0ae; color: #000; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <small style="color: #69f0ae; font-weight: bold; text-transform: uppercase;">AI
+                                    Preventative
+                                    Action Initiated</small>
+                                <div style="font-size: 0.9rem; color: #fff;">{{ forecast.action }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="request-list">
+            <h2>Recent Requests</h2>
+            {% if requests %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Urgency</th>
+                        <th>Priority Score</th>
+                        <th>AI Reason</th>
+                        <th>Assigned Dept</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>#{{ req.id }}</td>
+                        <td><span class="badge {{ req.category|lower }}">{{ req.category }}</span></td>
+                        <td>{{ req.location }}</td>
+                        <td>{{ req.urgency }}</td>
+                        <td><strong>{{ req.priority_score }}</strong></td>
+                        <td><small><em>{{ req.ai_explanation }}</em></small></td>
+                        <td><span style="color: #64b5f6; font-weight: bold;">{{ req.assigned_dept }}</span></td>
+                        <td>{{ req.description }}</td>
+                        <td>
+                            {% if req.status == 'Resolved' %}
+                            <span style="color: green; font-weight: bold;">✔ Resolved (Rating: {{ req.feedback
+                                }}/5)</span>
+                            {% else %}
+                            {{ req.status }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if req.status != 'Resolved' %}
+                            <form action="{{ url_for('resolve_request', req_id=req.id) }}" method="POST">
+                                <button type="submit"
+                                    style="background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Resolve</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No requests submitted yet.</p>
+            {% endif %}
+        </section>
+
+        <div class="links">
+            <a href="{{ url_for('index') }}" class="btn-secondary">Back to Home</a>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- Inject data safely to avoid linter errors -->
+    {% if chart_labels and chart_data %}
+    <script id="dept-labels-data" type="application/json">{{ chart_labels | tojson }}</script>
+    <script id="dept-values-data" type="application/json">{{ chart_data | tojson }}</script>
+    {% endif %}
+
+
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- AI LOGIC VISUALIZER ---
+        const recentRequests = {{ requests | tojson }};
+        const logContainer = document.getElementById('ai-log');
+
+        function addLog(text, color = '#ecf0f1') {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = text;
+            div.style.color = color;
+            logContainer.prepend(div); // Add to top
+
+            // Keep only 8 lines
+            if (logContainer.children.length > 8) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        // Simulate "Live" classification by replaying recent requests
+        let reqIndex = 0;
+        function playAIStream() {
+            if (recentRequests.length === 0) return;
+
+            // Pick a request (cycle through reverse to show newest)
+            const req = recentRequests[recentRequests.length - 1 - reqIndex];
+
+            // Step 1: Ingest
+            setTimeout(() => {
+                const time = new Date().toLocaleTimeString();
+                addLog(`<span class="log-time">[${time}]</span> <span class="log-req">REQ #${req.id} ACQUIRED</span>`, '#b0bec5');
+            }, 500);
+
+            // Step 2: NLP Analysis
+            setTimeout(() => {
+                addLog(`<span class="log-arrow">➜</span> ANALYZING TEXT: "${req.description.substring(0, 25)}..."`);
+            }, 1000);
+
+            // Step 3: Sentiment Analysis (NEW FEATURE)
+            setTimeout(() => {
+                let mood = "NEUTRAL";
+                let color = "#b0bec5";
+                if (req.urgency === 'Critical') { mood = "PROFOUND DISTRESS/PANIC"; color = "#ff5252"; }
+                else if (req.urgency === 'High') { mood = "URGENT/ANXIOUS"; color = "#ff9800"; }
+                else if (req.urgency === 'Medium') { mood = "CONCERNED"; color = "#ffd700"; }
+
+                addLog(`<span class="log-arrow">➜</span> SENTIMENT DETECTED: <span style="color: ${color};">${mood}</span>`);
+            }, 2000);
+
+            // Step 4: Classification
+            setTimeout(() => {
+                addLog(`<span class="log-arrow">➜</span> CLASSIFIED: <strong>[${req.category}]</strong> (Conf: 99%)`, '#a5d6a7');
+            }, 3000);
+
+            // Step 5: Resource Allocation (NEW FEATURE)
+            setTimeout(() => {
+                let resources = "Standard Patrol";
+                if (req.urgency === 'Critical') resources = "🚑 HAZMAT TEAM + 🚒 FIRE BRIGADE";
+                else if (req.urgency === 'High') resources = "Fast Response Unit (2 Personnel)";
+
+                addLog(`<span class="log-arrow">➜</span> ALLOCATING RESOURCES: <span style="color: #e040fb;">${resources}</span>`);
+            }, 4000);
+
+            // Step 6: Routing
+            setTimeout(() => {
+                addLog(`<span class="log-arrow">➜</span> <span class="log-dept">ROUTING TO: ${req.assigned_dept}</span>`, '#64b5f6');
+                addLog('--------------------------------------------------');
+            }, 5000);
+
+            reqIndex = (reqIndex + 1) % recentRequests.length;
+            setTimeout(playAIStream, 6500); // Loop every 6.5s
+        }
+
+        if (recentRequests && recentRequests.length > 0) {
+            playAIStream();
+        } else {
+            addLog('> WAITING FOR INCOMING DATA STREAMS...', '#78909c');
+        }
+
+        // Initialize Chart if data is present (Existing Code)
+        const labelsElement = document.getElementById('dept-labels-data');
+        const valuesElement = document.getElementById('dept-values-data');
+
+        if (labelsElement && valuesElement) {
+            const deptLabels = JSON.parse(labelsElement.textContent);
+            const deptData = JSON.parse(valuesElement.textContent);
+            const ctx = document.getElementById('deptChart').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: deptLabels,
+                    datasets: [{
+                        label: 'Total Requests',
+                        data: deptData,
+                        backgroundColor: [
+                            '#ef5350', '#42a5f5', '#ffee58', '#26a69a', '#ab47bc', '#ffa726'
+                        ],
+                        borderColor: '#2c3e50',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#37474f' },
+                            ticks: { color: '#b0bec5' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#b0bec5' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
