@@ -1,0 +1,385 @@
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-bg: #1e293b;
+    --text-color: #f8fafc;
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --input-bg: #334155;
+    --border-color: #475569;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+p {
+    color: #94a3b8;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.btn-secondary:hover {
+    background-color: var(--card-bg);
+    color: white;
+    border-color: var(--text-color);
+}
+
+/* Dashboard Stats */
+.stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    flex: 1;
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #60a5fa;
+    margin-top: 0.5rem;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    background-color: #334155;
+    font-weight: 600;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges */
+.badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Badges for Categories */
+.fire {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.health {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.electricity {
+    background-color: #fff8e1;
+    color: #f9a825;
+}
+
+.water {
+    background-color: #e0f7fa;
+    color: #006064;
+}
+
+.road {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.other {
+    background-color: #eceff1;
+    color: #455a64;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Alert Box */
+.alert-box {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    animation: pulse 2s infinite;
+}
+
+.alert-critical {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #e57373;
+}
+
+.alert-warning {
+    background-color: #fff3e0;
+    color: #ef6c00;
+    border: 1px solid #ffb74d;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Department Table Specifics */
+.dept-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dept-table th {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.dept-table td {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.dept-name {
+    font-weight: bold;
+}
+
+.val-resolved {
+    color: green;
+}
+
+.text-red {
+    color: red;
+}
+
+.text-green {
+    color: green;
+}
+
+.text-blue {
+    color: #2196F3;
+}
+
+.text-orange {
+    color: #f57c00;
+}
+
+.text-gray {
+    color: #666;
+}
+
+.progress-bar-bg {
+    background: #eee;
+    width: 100px;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+}
+
+.bg-green {
+    background: #4CAF50;
+}
+
+.bg-yellow {
+    background: #FFC107;
+}
+
+.bg-red {
+    background: #F44336;
+}
+
+.ai-rec {
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Heatmap Spot */
+.heatmap-spot {
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+    flex: 1 1 200px;
+}
+
+.intensity-critical {
+    background: #d32f2f;
+}
+
+.intensity-high {
+    background: #f57c00;
+}
+
+.intensity-medium {
+    background: #fbc02d;
+}
+
+.intensity-low {
+    background: #388e3c;
+}
+
+.spot-title {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.spot-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.spot-density {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.spot-intensity {
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
